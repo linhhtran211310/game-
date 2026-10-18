@@ -1,1 +1,723 @@
-# game- upload game Học viện tri thức
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lớp Học Mây Mơ ☁️</title>
+<style>
+.result-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(85%, 360px);
+  padding: 28px 22px;
+  border-radius: 24px;
+  text-align: center;
+  background: #fff8fc;
+  color: #754568;
+  box-shadow: 0 12px 45px #0003;
+  z-index: 9999;
+  animation: popupIn 0.35s ease;
+  }
+.result-popup.correct {
+  background: #f0fff4;
+  color: #24764b;
+  }
+.result-popup.wrong {
+  background: #fff2f2;
+  color: #a33b50;
+}
+.result-popup.hidden {
+  display: none;
+}
+.result-icon {
+  font-size: 58px;
+  animation: bounce 0.6s ease;
+}
+.result-popup h2 {
+  margin: 12px 0;
+}
+.result-popup p {
+  line-height: 1.5;
+}
+#resultNextBtn {
+  border: none;
+  border-radius: 14px;
+  padding: 12px 20px;
+  margin-top: 12px;
+  background: #e9b9d7;
+  color: #653c59;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+#resultNextBtn:hover {
+  transform: scale(1.05);
+}
+.confetti-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.confetti-piece {
+  position: absolute;
+  top: -12px;
+  width: 9px;
+  height: 14px;
+  border-radius: 3px;
+  animation: confettiFall 1.6s ease-out forwards;
+}
+@keyframes popupIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -45%) scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@keyframes bounce {
+  0%, 100% { transform: scale(1); }
+  40% { transform: scale(1.3) rotate(-8deg); }
+  70% { transform: scale(0.9); }
+}
+@keyframes confettiFall {
+  to {
+    transform: translateY(350px) rotate(600deg);
+    opacity: 0;
+  }
+}
+:root {
+  --pink: #ffdce9;
+  --purple: #b6a6ef;
+  --mint: #d9f5e6;
+  --ink: #514665;
+  --muted: #92869f;
+  --white: #fffdfd;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Trebuchet MS", Arial, sans-serif;
+  color: var(--ink);
+  background: linear-gradient(135deg,#fff0f6,#eeeaff,#e9fbf2);
+}
+button { font: inherit; cursor: pointer; }
+button:hover { filter: brightness(.97); transform: translateY(-2px); }
+button:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+.container { max-width: 850px; margin: auto; padding: 24px 16px; }
+header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:20px; }
+h1 { font-size:clamp(22px,4vw,32px); margin:0; }
+.subtitle { color:var(--muted); font-size:13px; margin-top:5px; }
+.pill { background:white; padding:10px 14px; border-radius:30px; font-weight:bold; font-size:13px; }
+.stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
+.stat,.card { background:#ffffffdf; border:1px solid white; border-radius:22px; padding:18px; box-shadow:0 8px 25px #77658b12; }
+.stat-label { font-size:11px; color:var(--muted); font-weight:bold; }
+.stat-value { font-size:26px; font-weight:900; margin-top:5px; }
+.progress { height:8px; background:#eee8f5; border-radius:20px; overflow:hidden; margin-top:12px; }
+.progress div { height:100%; width:0; background:linear-gradient(90deg,#b5a5ee,#f3abc9); transition:width .3s; }
+.card { margin-bottom:15px; }
+.card-head { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.tag { background:#f0eaff; color:#8271b6; border-radius:20px; padding:7px 11px; font-size:10px; font-weight:bold; }
+.scene { text-align:center; padding:18px 8px 12px; }
+.mascot { font-size:62px; animation:bob 2s infinite ease-in-out; }
+@keyframes bob { 50% { transform:translateY(-5px); } }
+h2 { font-size:20px; margin:10px 0; }
+.description { color:var(--muted); font-size:13px; line-height:1.6; }
+.question { background:#fff4f8; border-radius:17px; padding:17px; margin:14px 0; font-size:17px; font-weight:bold; line-height:1.5; }
+.answers { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.answer { background:white; color:var(--ink); text-align:left; border:2px solid #eee7f5; border-radius:14px; padding:13px; min-height:54px; font-weight:bold; }
+.answer.correct { border-color:#80cda7; background:#e4f9ed; }
+.answer.wrong { border-color:#f0a1bc; background:#ffebf1; }
+.answer:disabled { opacity:1; }
+.feedback { min-height:43px; font-size:13px; line-height:1.5; padding:9px 2px; }
+.actions { display:flex; flex-wrap:wrap; gap:9px; }
+.primary,.secondary { border:0; border-radius:13px; padding:12px 16px; font-weight:bold; }
+.primary { color:white; background:linear-gradient(120deg,#a99ae6,#eea5c5); }
+.secondary { color:#7665a7; background:#f0ebfb; }
+.full { width:100%; margin-top:10px; }
+.hidden { display:none !important; }
+#membersPage input,
+#profilePage input {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #eadcf4;
+  border-radius: 12px;
+  background: #fffafd;
+  color: var(--ink);
+  font: inherit;
+}
+.member-item,
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 14px;
+  background: #fff4f8;
+}
+.member-item .member-info {
+  flex: 1;
+  min-width: 0;
+}
+.member-item button {
+  margin-top: 5px;
+}
+.avatar-choice {
+  min-width: 48px;
+  padding: 8px;
+  border: 2px solid #eee7f5;
+  border-radius: 12px;
+  background: white;
+  font-size: 24px;
+}
+.avatar-choice.selected {
+  border-color: #b6a6ef;
+  background: #f0eaff;
+}
+.footer { text-align:center; color:var(--muted); font-size:11px; padding:10px; }
+.result { text-align:center; padding:20px 5px; }
+.result-icon { font-size:64px; }
+@media(max-width:540px) {
+  .container { padding:15px 10px; }
+  .stats { gap:7px; }
+  .stat { padding:12px 9px; }
+  .stat-value { font-size:21px; }
+  .answers { grid-template-columns:1fr; }
+  .card { padding:14px; }
+  header { align-items:flex-start; }
+}
+</style>
+</head>
+<body>
+<main class="container">
+<header>
+  <div>
+    <h1>☁️ Lớp Học Mây Mơ</h1>
+    <div class="subtitle">Học tập · Khám phá · Chinh phục</div>
+  </div>
+  <div class="pill" id="levelBadge">🌷 Màn 1/5</div>
+</header>
+
+<section class="stats">
+  <div class="stat">
+    <div class="stat-label">⭐ ĐIỂM SỐ</div>
+    <div class="stat-value" id="score">0</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">🪙 XU THƯỞNG</div>
+    <div class="stat-value" id="coins">0</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">💗 MẠNG SỐNG</div>
+    <div class="stat-value" id="lives">❤️❤️❤️</div>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-head">
+    <strong>🌈 Hành trình tri thức</strong>
+    <span class="tag" id="progressText">Câu 1/3</span>
+  </div>
+  <div class="progress"><div id="progressBar"></div></div>
+</section>
+
+<section class="card" id="gameCard">
+  <div class="scene">
+    <div class="mascot" id="mascot">🐻</div>
+    <h2 id="levelTitle">Màn 1: Khu vườn Toán học</h2>
+    <p class="description" id="levelDesc">Giải những câu đố để giúp các bạn nhỏ khám phá tri thức!</p>
+  </div>
+  <div class="question" id="question">Đang chuẩn bị câu hỏi...</div>
+  <div class="answers" id="answers"></div>
+  <div class="feedback" id="feedback" aria-live="polite"></div>
+  <div class="actions">
+    <button class="secondary" id="hintBtn">💡 Trợ giúp (-10 xu)</button>
+    <button class="primary hidden" id="nextBtn">Câu tiếp theo →</button>
+  </div>
+</section>
+
+<section class="card hidden" id="resultCard">
+  <div class="result">
+    <div class="result-icon" id="resultIcon">🎉</div>
+    <h2 id="resultTitle">Hoàn thành!</h2>
+    <p class="description" id="resultText"></p>
+    <button class="primary full" id="continueBtn">Chơi tiếp →</button>
+    <button class="secondary full" id="restartBtn">↻ Chơi lại từ đầu</button>
+  </div>
+</section>
+
+<section class="card">
+  <div class="card-head"><h2>📖 Nhật ký học tập</h2></div>
+  <div class="description" id="log">☁️ Chào mừng bạn đến với Lớp Học Mây Mơ!</div>
+</section>
+<div class="footer">Made with 💗 · Hãy học tập theo cách vui vẻ nhất!</div>
+  <section class="card">
+    <h2>🌷 Khu vực người chơi</h2>
+    <div class="actions">
+      <button class="secondary" onclick="showPage('game')">🎮 Trò chơi</button>
+      <button class="secondary" onclick="showPage('members')">👥 Thành viên</button>
+      <button class="secondary" onclick="showPage('profile')">💗 Hồ sơ</button>
+      <button class="secondary" onclick="showPage('ranking')">🏆 Xếp hạng</button>
+    </div>
+  </section>
+  <!-- Danh sách thành viên -->
+  <section class="card hidden" id="membersPage">
+    <h2>👥 Danh sách thành viên</h2>
+    <p class="description">Thêm người chơi và chọn tài khoản để học tập.</p>
+    <div class="actions">
+      <input id="newMemberName" placeholder="Nhập tên thành viên">
+      <button class="primary" id="addMemberBtn">＋ Thêm</button>
+    </div>
+    <p id="memberCount">Tổng số thành viên: 0</p>
+    <div id="memberList"></div>
+  </section>
+  <!-- Hồ sơ người chơi -->
+  <section class="card hidden" id="profilePage">
+    <h2>💗 Hồ sơ người chơi</h2>
+    <div id="profileAvatarPreview" style="font-size:60px">🐰</div>
+    <label for="profileName">Tên hiển thị</label>
+    <input id="profileName" placeholder="Nhập tên của bạn">
+    <h3>Chọn ảnh đại diện</h3>
+    <div id="avatarOptions" class="actions"></div>
+    <button class="primary full" id="saveProfileBtn">💾 Lưu hồ sơ</button>
+  </section>
+  <!-- Bảng xếp hạng -->
+  <section class="card hidden" id="rankingPage">
+    <h2>🏆 Bảng xếp hạng</h2>
+    <div id="rankingList"></div>
+  </section>
+</main>
+<script>
+const levels = [
+  {
+    title:"Toán 11", emoji:"🐻",
+    questions: [
+	 {q:"Tập xác định của hàm số y = tan x là gì?",a:["Mọi số thực x","x ≠ kπ, k ∈ ℤ","x ≠ π/2 + kπ, k ∈ ℤ", "x > 0"],c:2,why:"Hàm số tan x xác định khi cos x ≠ 0, tức x ≠ π/2 + kπ, với k ∈ ℤ."},	 
+	 {q:"Giá trị của sin 30° bằng bao nhiêu?",a:["0", "1/2", "√2/2", "1"],c:1,why:"sin 30° = 1/2."},
+	 {q:"Cấp số cộng có u₁ = 3, công sai d = 2. Giá trị u₅ là bao nhiêu?",a:["9","10","11","13"],c:2,why:"u₅ = u₁ + 4d = 3 + 4 × 2 = 11."}
+	 ]
+	}, 
+  {
+    title:"Vật lý 11", emoji:"🐰",
+    questions:[
+      {q:"Đơn vị của điện tích là gì?",a:["Ampe (A)","Vôn (V)","Culông (C)","Ôm (Ω)"],c:2,why:"Đơn vị SI của điện tích là culông, kí hiệu là C"},
+      {q:"Hai điện tích cùng dấu đặt gần nhau sẽ như thế nào?",a:["Hút nhau","Đẩy nhau","Không tương tác","Luôn trung hoà"],c:1,why:"Hai điện tích cùng dấu thì đẩy nhau, trái dấu thì hút nhau."},
+      {q:"Trong dao động điều hoà, đại lượng nào sau đây luôn không âm",a:["Li độ","Vận tốc","Tốc độ","Gia tốc"],c:2,why:"Tốc độ là độ lớn của vận tốc nên luôn không âm"}
+    ]
+  },
+  {
+    title:"Tiếng anh 11", emoji:"🦊",
+    questions:[
+      {q:"Choose the correct answer: If I ___ enough money, I would buy a new laptop.",a:["Have","Had","Will have","Am having"],c:1,why:"Câu điều kiện loại 2 dùng If + quá khứ đơn, would + động từ nguyên mẫu."},
+      {q:"Choose the correct answer: She is interested ___ learning English.",a:["on","at","in","for"],c:2,why:"Cấu trúc đúng là be interested in doing something."},
+      {q:"Choose the correct answer: They have lived here ___ 2020.",a:["for","since","during","from"],c:1,why:"Since đi với mốc thời gian; for đi với khoảng thời gian."}
+    ]
+  },
+  {
+    title:"Tin học 11", emoji:"🐱",
+    questions:[
+      {q:"Trong Python, lệnh nào dùng để hiển thị dữ liệu ra màn hình",a:["input()","print()","int()","range()"],c:1,why:"Hàm print() dùng để hiển thị dữ liệu ra màn hình"},
+      {q:"Kiểu dữ liệu nào dùng để lưu giá trị đúng hoặc sai trong Python?",a:["int","str","float","bool"],c:3,why:"Kiểu bool lưu hai giá trị True và False"},
+      {q:"Kết quả của đoạn code sau là gì? print(2 ** 3)",a:["5","6","8","9"],c:2,why:"Toán tử ** là phép luỹ thừa: 2 ** 3 = 8."}
+    ]
+  },
+];
+
+let level=0, qi=0, score=0, coins=50, lives=3;
+let answered=false, hintUsed=false, finished=false;
+const $ = id => document.getElementById(id);
+function showAnswerEffect(isCorrect, correctAnswerText = "") {
+   const popup = $("resultPopup");
+  if (!popup) return;
+
+  const icon = $("answerResultIcon");
+  const title = $("answerResultTitle");
+  const message = $("answerResultMessage");
+  const correctAnswer = $("answerCorrectText");
+  const confetti = $("answerConfetti");
+
+  popup.classList.remove("hidden", "correct", "wrong");
+  confetti.innerHTML = "";
+
+  if (isCorrect) {
+    popup.classList.add("correct");
+    icon.textContent = "🎉";
+    title.textContent = "Chính xác rồi!";
+    message.textContent =
+      "Tuyệt vời! Bạn nhận được 100 điểm và 5 xu! 🌸";
+    correctAnswer.textContent = "";
+
+    const colors = [
+      "#ff8fba", "#ffd166", "#a8e6cf",
+      "#b8b5ff", "#ffaaa5"
+    ];
+
+    for (let i = 0; i < 30; i++) {
+      const piece = document.createElement("span");
+      piece.className = "confetti-piece";
+      piece.style.left = Math.random() * 100 + "%";
+      piece.style.backgroundColor =
+        colors[Math.floor(Math.random() * colors.length)];
+      piece.style.animationDelay =
+        Math.random() * 0.5 + "s";
+      confetti.appendChild(piece);
+    }
+  } else {
+    popup.classList.add("wrong");
+    icon.textContent = "💗";
+    title.textContent = "Đừng buồn nhé!";
+    message.textContent =
+      "Sai một câu không sao, mình cùng cố gắng nhé!";
+    correctAnswer.textContent =
+      "Đáp án đúng: " + correctAnswerText;
+  }
+}
+
+function closeAnswerEffect() {
+  $("resultPopup").classList.add("hidden");
+}
+function render(){
+  const L=levels[level], Q=L.questions[qi];
+  $("levelBadge").textContent=`🌷 Màn ${level+1}/${levels.length}`;
+  $("levelTitle").textContent=`Màn ${level+1}: ${L.title}`;
+  $("levelDesc").textContent =
+  L.desc || "Trả lời câu hỏi để khám phá tri thức nhé!";
+  $("mascot").textContent=L.emoji;
+  $("question").textContent=Q.q;
+  $("progressText").textContent=`Câu ${qi+1}/${L.questions.length}`;
+  $("progressBar").style.width=((qi/L.questions.length)*100)+"%";
+  $("score").textContent=score;
+  $("coins").textContent=coins;
+  $("lives").textContent="❤️".repeat(lives)+"🤍".repeat(3-lives);
+  $("feedback").textContent="";
+  $("answers").innerHTML="";
+  $("nextBtn").classList.add("hidden");
+  $("hintBtn").disabled=false;
+  answered=false; hintUsed=false;
+  Q.a.forEach((text,i)=>{
+    const b=document.createElement("button");
+    b.className="answer";
+    b.textContent=String.fromCharCode(65+i)+". "+text;
+    b.onclick=()=>choose(i,b);
+    $("answers").appendChild(b);
+  });
+  $("progressBar").style.width=((qi/L.questions.length)*100)+"%";
+}
+function choose(i,button){
+  if(answered||finished)return;
+  answered=true;
+  const Q=levels[level].questions[qi];
+  [...$("answers").children].forEach(b=>b.disabled=true);
+  if(i===Q.c){
+   button.classList.add("correct");
+    score += 100;
+	const member = currentMember();
+if (member) {
+  member.score = score;
+  saveMembers();
+}
+    coins += 5;
+    $("feedback").textContent =
+      "✨ Chính xác! " + Q.why + " +100 điểm, +5 xu.";
+    $("log").textContent =
+      `🌟 Trả lời đúng tại ${levels[level].title}. Tổng điểm: ${score}.`;
+    showAnswerEffect(true);
+  } else {
+    button.classList.add("wrong");
+    $("answers").children[Q.c].classList.add("correct");
+    lives = Math.max(0, lives - 1);
+    $("feedback").textContent =
+      "🌷 Chưa chính xác! " + Q.why + " Bạn mất 1 mạng.";
+    $("log").textContent =
+      "📚 Đã xem lời giải. Cố gắng ở câu tiếp theo nhé!";
+    showAnswerEffect(false, Q.a[Q.c]);
+  }
+  $("score").textContent = score;
+  $("coins").textContent = coins;
+  $("lives").textContent =
+    "❤️".repeat(lives) + "🤍".repeat(3 - lives);
+  $("nextBtn").textContent =
+   qi === levels[level].questions.length - 1
+  ? (level === levels.length - 1
+      ? "Xem kết quả 🏆"
+      : "Qua màn tiếp →")
+  : "Câu tiếp theo →";
+  $("nextBtn").classList.remove("hidden");
+  $("hintBtn").disabled = true;
+  if (lives === 0) {
+    $("feedback").textContent +=
+      " Hết mạng rồi! Nhấn nút bên dưới để thử lại màn này.";
+    $("nextBtn").textContent = "↻ Thử lại màn";
+  }
+}
+$("hintBtn").onclick=()=>{
+  if(answered||hintUsed)return;
+  if(coins<10){$("feedback").textContent="Bạn cần ít nhất 10 xu để dùng gợi ý.";return;}
+  coins-=10;hintUsed=true;
+  const Q=levels[level].questions[qi];
+  const wrong=[...$("answers").children].filter((_,i)=>i!==Q.c);
+  wrong.slice(0,2).forEach(b=>{b.disabled=true;b.style.opacity=".35";});
+  $("coins").textContent=coins;
+  $("feedback").textContent="💡 Gợi ý: Hai đáp án sai đã được ẩn bớt!";
+  $("hintBtn").disabled=true;
+};
+$("nextBtn").onclick = () => {
+  // Nếu hết mạng, thử lại màn hiện tại
+  if (lives === 0) {
+    lives = 3;
+    qi = 0;
+    render();
+    $("log").textContent =
+      "🔄 Thử lại màn " + (level + 1) + " nhé!";
+    return;
+  }
+  if (qi < levels[level].questions.length - 1) {
+    qi++;
+    render();
+    return;
+  }
+  if (level < levels.length - 1) {
+    level++;
+    qi = 0;
+    render();
+    $("log").textContent =
+      "🎉 Mở khóa: " + levels[level].title + "!";
+  }
+};
+function showResult(){
+  finished=true;
+  $("gameCard").classList.add("hidden");
+  $("resultCard").classList.remove("hidden");
+  $("resultIcon").textContent=score>=1200?"🏆":"🌈";
+  $("resultTitle").textContent=score>=1200?"Nhà vô địch tri thức!":"Hoàn thành hành trình!";
+  $("resultText").textContent =
+  `Bạn đã hoàn thành ${levels.length} màn chơi! Điểm: ${score} · Xu còn lại: ${coins}.`;
+  $("continueBtn").classList.add("hidden");
+  $("log").textContent="🏆 Chúc mừng! Bạn đã hoàn thành Lớp Học Mây Mơ.";
+}
+function restart(){
+  level=0;qi=0;score=0;coins=20;lives=3;answered=false;hintUsed=false;finished=false;
+  $("resultCard").classList.add("hidden");
+  $("gameCard").classList.remove("hidden");
+  render();$("log").textContent="☁️ Một hành trình mới bắt đầu!";
+}
+$("restartBtn").onclick=restart;
+const MEMBER_KEY = "mayMoMembers_v1";
+const CURRENT_KEY = "mayMoCurrentMember_v1";
+const AVATARS = ["🐰", "🐻", "🐱", "🦊", "🐼", "🐸", "🌷", "🦋"];
+let members = [];
+let currentMemberId = null;
+let selectedAvatar = "🐰";
+function loadMembers() {
+  try {
+    members = JSON.parse(localStorage.getItem(MEMBER_KEY)) || [];
+  } catch {
+    members = [];
+  }
+  currentMemberId = localStorage.getItem(CURRENT_KEY);
+  if (!members.length) {
+    const firstMember = {
+      id: String(Date.now()),
+      name: "Người chơi 1",
+      avatar: "🐰",
+      score: 0
+    };
+    members.push(firstMember);
+    currentMemberId = firstMember.id;
+    saveMembers();
+  }
+  if (!members.some(m => m.id === currentMemberId)) {
+    currentMemberId = members[0].id;
+  }
+  localStorage.setItem(CURRENT_KEY, currentMemberId);
+}
+function saveMembers() {
+  localStorage.setItem(MEMBER_KEY, JSON.stringify(members));
+  localStorage.setItem(CURRENT_KEY, currentMemberId);
+}
+
+function currentMember() {
+  return members.find(m => m.id === currentMemberId);
+}
+
+function showPage(page) {
+  $("gameCard").classList.toggle(
+    "hidden",
+    page !== "game" || finished
+  );
+  $("resultCard").classList.toggle(
+    "hidden",
+    page !== "game" || !finished
+  );
+  $("membersPage").classList.toggle("hidden", page !== "members");
+  $("profilePage").classList.toggle("hidden", page !== "profile");
+  $("rankingPage").classList.toggle("hidden", page !== "ranking");
+  if (page === "members") renderMembers();
+  if (page === "profile") renderProfile();
+  if (page === "ranking") renderRanking();
+}
+function renderMembers() {
+  const list = $("memberList");
+  list.innerHTML = "";
+  $("memberCount").textContent =
+    `Tổng số thành viên: ${members.length}`;
+
+  members.forEach(member => {
+    const card = document.createElement("div");
+    card.className = "member-item";
+
+    const avatar = document.createElement("span");
+    avatar.style.fontSize = "32px";
+    avatar.textContent = member.avatar;
+
+    const info = document.createElement("div");
+    info.className = "member-info";
+
+    const name = document.createElement("strong");
+    name.textContent = member.name;
+
+    const detail = document.createElement("p");
+    detail.textContent =
+      `⭐ ${member.score} điểm` +
+      (member.id === currentMemberId ? " · Đang chơi" : "");
+
+    const chooseBtn = document.createElement("button");
+    chooseBtn.className = "primary";
+    chooseBtn.textContent = "Chọn để chơi";
+    chooseBtn.onclick = () => {
+      currentMemberId = member.id;
+      score = member.score;
+      saveMembers();
+      updatePlayerDisplay();
+      showPage("game");
+      render();
+    };
+
+    info.append(name, detail, chooseBtn);
+    card.append(avatar, info);
+    list.appendChild(card);
+  });
+}
+
+function renderProfile() {
+  const member = currentMember();
+  if (!member) return;
+
+  $("profileName").value = member.name;
+  $("profileAvatarPreview").textContent = member.avatar;
+  selectedAvatar = member.avatar;
+
+  const options = $("avatarOptions");
+  options.innerHTML = "";
+
+  AVATARS.forEach(avatar => {
+    const button = document.createElement("button");
+    button.className = "avatar-choice";
+    button.textContent = avatar;
+
+    if (avatar === selectedAvatar) {
+      button.classList.add("selected");
+    }
+
+    button.onclick = () => {
+      selectedAvatar = avatar;
+      $("profileAvatarPreview").textContent = avatar;
+      renderAvatarOptions();
+    };
+
+    options.appendChild(button);
+  });
+}
+
+function renderAvatarOptions() {
+  document.querySelectorAll(".avatar-choice").forEach(button => {
+    button.classList.toggle(
+      "selected",
+      button.textContent === selectedAvatar
+    );
+  });
+}
+
+function updatePlayerDisplay() {
+  const member = currentMember();
+  if (!member) return;
+
+  $("log").textContent =
+    `☁️ Xin chào ${member.name}! Cùng học tập nhé!`;
+}
+
+function renderRanking() {
+  const list = $("rankingList");
+  list.innerHTML = "";
+
+  const sorted = [...members].sort((a, b) => b.score - a.score);
+
+  sorted.forEach((member, index) => {
+    const row = document.createElement("div");
+    row.className = "ranking-item";
+    row.textContent =
+      `${index + 1}. ${member.avatar} ${member.name} — ${member.score} điểm`;
+
+    list.appendChild(row);
+  }
+  );
+}
+$("addMemberBtn").onclick = () => {
+  const name = $("newMemberName").value.trim();
+  if (!name) {
+    alert("Bạn hãy nhập tên thành viên nhé!");
+    return;
+  }
+  const member = {
+    id: String(Date.now()) + Math.random().toString(16).slice(2),
+    name,
+    avatar: AVATARS[members.length % AVATARS.length],
+    score: 0
+  };
+  members.push(member);
+  $("newMemberName").value = "";
+  saveMembers();
+  renderMembers();
+};
+$("saveProfileBtn").onclick = () => {
+  const member = currentMember();
+  const name = $("profileName").value.trim();
+  if (!member) return;
+  if (!name) {
+    alert("Tên người chơi không được để trống!");
+    return;
+  }
+  member.name = name;
+  member.avatar = selectedAvatar;
+  saveMembers();
+  renderMembers();
+  renderProfile();
+  renderRanking();
+  updatePlayerDisplay();
+  alert("Đã lưu hồ sơ thành công! 💗");
+};
+loadMembers();
+updatePlayerDisplay();
+render();
+</script>
+<div id="resultPopup" class="result-popup hidden">
+  <div id="answerResultIcon" class="result-icon">🎉</div>
+  <h2 id="answerResultTitle">Chính xác rồi!</h2>
+  <p id="answerResultMessage">Bạn làm tốt lắm!</p>
+  <p id="answerCorrectText"></p>
+  <div id="answerConfetti" class="confetti-container"></div>
+  <button id="resultNextBtn" onclick="closeAnswerEffect()">
+    Tiếp tục →
+  </button>
+</div>
+</body>
+
+</html>
